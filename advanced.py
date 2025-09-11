@@ -16,11 +16,11 @@ for _ in range(n):
     # skewed age: normal distribution centered at 40, sd=10, clipped between 18–80
     age = int(np.clip(np.random.normal(loc=40, scale=10), 18, 80))
     
-    gender = random.choice(["Male", "Female"])    # gender
-    target_y = random.choice(["Yes", "No"])       # label
-    fico_score = random.randint(300, 850)         # FICO score
+    gender = random.choice(["Male", "Female"])           # gender
+    account_past_due = random.choices(["Yes", "No"], weights=[0.25, 0.75], k=1)[0]
+    fico_score = random.randint(300, 850)                # FICO score
     city = fake.city()
-    state = fake.state_abbr()                     # two-letter state code
+    state = fake.state_abbr()                            # two-letter state code
     
     # credit card details
     credit_card_number = fake.credit_card_number(card_type=None)
@@ -43,6 +43,9 @@ for _ in range(n):
     usage = round(usage, 2)
     outstanding_balance = int(credit_limit * usage / 100)
     
+    # Days past due logic
+    days_past_due = 0 if account_past_due == "No" else random.randint(1, 120)
+    
     data.append({
         "id": fake.uuid4(),
         "age": age,
@@ -54,14 +57,15 @@ for _ in range(n):
         "credit_limit": credit_limit,
         "outstanding_balance": outstanding_balance,
         "usage_percent": usage,
-        "target_y": target_y
+        "account_past_due": account_past_due,
+        "days_past_due": days_past_due
     })
 
 # convert to dataframe
 df = pd.DataFrame(data)
 
 # quick preview
-print(df.head())
+print(df['account_past_due'].value_counts(normalize=True))
 
 # Plot distributions
 plt.figure(figsize=(20, 5))
@@ -87,11 +91,11 @@ plt.title("Distribution of Usage Percent")
 plt.xlabel("Usage %")
 plt.ylabel("Count")
 
-# Target_y distribution
+# Past due distribution
 plt.subplot(1, 4, 4)
-df['target_y'].value_counts().plot(kind='bar')
-plt.title("Distribution of Target (Yes/No)")
-plt.xlabel("Label")
+df['account_past_due'].value_counts().plot(kind='bar')
+plt.title("Distribution of Account Past Due")
+plt.xlabel("Past Due?")
 plt.ylabel("Count")
 
 plt.tight_layout()
