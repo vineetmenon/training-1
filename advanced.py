@@ -25,8 +25,23 @@ for _ in range(n):
     # credit card details
     credit_card_number = fake.credit_card_number(card_type=None)
     credit_limit = random.randint(1000, 20000)
-    outstanding_balance = random.randint(0, credit_limit)
-    usage = round(outstanding_balance / credit_limit * 100, 2)  # percentage
+    
+    # Weighted usage distribution
+    usage_bucket = random.choices(
+        population=["low", "medium", "high"],
+        weights=[0.6, 0.3, 0.1],  # 60% low, 30% medium, 10% high
+        k=1
+    )[0]
+    
+    if usage_bucket == "low":
+        usage = np.random.uniform(0, 30)    # mostly <30%
+    elif usage_bucket == "medium":
+        usage = np.random.uniform(30, 70)   # 30–70%
+    else:
+        usage = np.random.uniform(70, 100)  # 70–100%
+    
+    usage = round(usage, 2)
+    outstanding_balance = int(credit_limit * usage / 100)
     
     data.append({
         "id": fake.uuid4(),
@@ -65,11 +80,11 @@ plt.title("Distribution of FICO Score")
 plt.xlabel("FICO Score")
 plt.ylabel("Count")
 
-# Credit limit distribution
+# Usage percent distribution
 plt.subplot(1, 4, 3)
-df['credit_limit'].plot(kind='hist', bins=15, edgecolor='black')
-plt.title("Distribution of Credit Limit")
-plt.xlabel("Credit Limit ($)")
+df['usage_percent'].plot(kind='hist', bins=20, edgecolor='black')
+plt.title("Distribution of Usage Percent")
+plt.xlabel("Usage %")
 plt.ylabel("Count")
 
 # Target_y distribution
